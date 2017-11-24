@@ -28,6 +28,69 @@ from tensorflow.contrib.rnn.python.ops import rnn_cell
 from tensorflow.contrib.rnn import LSTMCell
 from tensorflow.contrib.rnn.python.ops import core_rnn
 
+def load_data_si(direc, dataset, postfix="", prefix="signer_independent_"):
+  datadir = direc + '/' + dataset + '/' + prefix + dataset
+  
+  data_train = []
+  data_validation = []
+  data_testing = []
+
+  datafile = open(datadir+'_TRAIN_'+postfix, 'r')
+  datareader = csv.reader(datafile)
+  for idx1,row in enumerate(datareader):
+    data_train.append( [float(i) for i in list(row)] )
+
+  datafile = open(datadir+'_VALIDATION_'+postfix, 'r')
+  datareader = csv.reader(datafile)
+  for idx1,row in enumerate(datareader):
+    data_validation.append( [float(i) for i in list(row)] )
+
+  datafile = open(datadir+'_TESTING_'+postfix, 'r')
+  datareader = csv.reader(datafile)
+  for idx1,row in enumerate(datareader):
+    data_testing.append( [float(i) for i in list(row)] )
+
+
+
+  data_train = np.asarray(data_train)
+  data_validation = np.asarray(data_validation)
+  data_testing = np.asarray(data_testing)
+
+
+
+  ind_train = np.random.permutation(len(data_train))
+  ind_validation = np.random.permutation(len(data_validation))
+  ind_testing = np.random.permutation(len(data_testing))
+
+
+  
+  X_train = []
+  for i in ind_train[:]:
+    X_train.append(data_train[[i]][0][1:])
+  
+  X_val = []
+  for i in ind_validation[:]:
+    X_val.append(data_validation[[i]][0][1:])
+  
+  X_test = []
+  for i in ind_testing[:]:
+    X_test.append(data_testing[[i]][0][1:])
+  
+  y_train = []
+  for i in ind_train[:]:
+    y_train.append(int(data_train[[i]][0][0]))
+  
+  y_val = []
+  for i in ind_validation[:]:
+    y_val.append(int(data_validation[[i]][0][0]))
+  
+  y_test = []
+  for i in ind_testing[:]:
+    y_test.append(int(data_testing[[i]][0][0]))#
+  
+  return X_train,X_val,X_test,y_train,y_val,y_test
+
+
 def load_data(direc,ratio,dataset,postfix=""):
   """Input:
   direc: location of the UCR archive
