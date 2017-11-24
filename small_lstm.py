@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf  #TF 1.1.0rc1
 tf.logging.set_verbosity(tf.logging.ERROR)
 #import matplotlib.pyplot as plt
-from tsc_model import Model,sample_batch,load_data#,check_test
+from tsc_model import Model,sample_batch,load_data, load_data_si#,check_test
 from scipy import sparse
 import math
 from keras.models import Sequential
@@ -34,12 +34,12 @@ epinthesis_flag = False
 load_flag = False
 load_image_flag = False
 
-model_file_name = "model_40_full"
-features_num=384 #384,174,222
-dataset = "40_classes_with_face"
+model_file_name = "model_1_si"
+features_num=174 #384,174,222
+dataset = "1_classes_without_face"
 epoches = 500
 
-labels_dict = {0: 28, 1: 26, 2: 10, 3: 20, 4: 16, 5: 43, 6: 16, 7: 12, 8: 12, 9: 10, 10: 8, 11: 9, 12: 12, 13: 10, 14: 10, 15: 10, 16: 8, 17: 8, 18: 8, 19: 8, 20: 12, 21: 8, 22:12, 23:10, 24:12, 25:8, 26:8, 27:9, 28:9, 29:11, 30: 6, 31:10, 32:10, 33:6, 34:6, 35:5, 36:5, 37:5, 38:5, 39:5}
+labels_dict = {0: 2020, 1: 606, 2: 808, 3: 1818, 4: 909, 5: 808, 6: 606, 7: 1212, 8: 707, 9: 3434}
 
 def pad(A, length):
     arr = np.zeros(length)
@@ -67,7 +67,10 @@ summaries_dir = '/home/bmocialov/LSTM_tsc'
 
 """Load the data"""
 ratio = np.array([0.8,0.9]) #Ratios where to split the training and validation set
-X_train,X_val,X_test,y_train,y_val,y_test = load_data(direc,ratio,dataset='DutchSL',postfix=dataset)
+#X_train,X_val,X_test,y_train,y_val,y_test = load_data(direc,ratio,dataset='DutchSL',postfix=dataset)
+X_train,X_val,X_test,y_train,y_val,y_test = load_data_si(direc,dataset="DutchSL",postfix=dataset)
+
+
 #print len(X_train)
 #N = len(X_train)
 #sl = 1
@@ -166,19 +169,19 @@ X_train = X_train[0]
 X_train = np.array(X_train)
 X_train = np.vstack([np.expand_dims(x, 0) for x in X_train])
 y_train_copy = y_train
-y_train = np.eye(40)[y_train]
+y_train = np.eye(10)[y_train]
 
 X_test = X_test[0]
 X_test = np.array(X_test)
 X_test = np.vstack([np.expand_dims(x, 0) for x in X_test])
 y_test_copy = y_test
-y_test = np.eye(40)[y_test]
+y_test = np.eye(10)[y_test]
 
 X_val = X_val[0]
 X_val = np.array(X_val)
 X_val = np.vstack([np.expand_dims(x, 0) for x in X_val])
 y_val_copy = y_val
-y_val = np.eye(40)[y_val]
+y_val = np.eye(10)[y_val]
 
 #print X_train.shape
 #print X_test.shape
@@ -337,14 +340,15 @@ if(load_flag):
   sys.exit(0)
 
 model = Sequential()
-model.add(LSTM(32, return_sequences=True,
+model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5, return_sequences=True,
                input_shape=(features_num, 55)))  # returns a sequence of vectors of dimension 32   input shape = 384|174
-model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32))  # return a single vector of dimension 32
-model.add(Dense(40, activation='softmax'))
-model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5, return_sequences=True))  # returns a sequence of vectors of dimension 32
+model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5))  # return a single vector of dimension 32
+model.add(Dense(10, activation='softmax'))
+model.compile(loss="mean_squared_error", optimizer="adam", metrics=['accuracy'])
+#model.compile(loss='categorical_crossentropy',
+#              optimizer='rmsprop',
+#              metrics=['accuracy'])
 
 
 
