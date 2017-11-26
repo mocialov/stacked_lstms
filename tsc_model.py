@@ -91,12 +91,12 @@ def load_data_si(direc, dataset, postfix="", prefix="signer_independent_"):
   return X_train,X_val,X_test,y_train,y_val,y_test
 
 
-def load_data(direc,ratio,dataset,postfix=""):
+def load_data(direc,ratio,dataset,postfix="",prefix="signer_independent_"):
   """Input:
   direc: location of the UCR archive
   ratio: ratio to split training and testset
   dataset: name of the dataset in the UCR archive"""
-  datadir = direc + '/' + dataset + '/' + dataset
+  datadir = direc + '/' + dataset + '/' + prefix + dataset
   #data_train = np.genfromtxt(datadir+'_TRAIN',delimiter=',')
   #data_test_val = np.genfromtxt(datadir+'_TEST',delimiter=',')
   
@@ -114,7 +114,7 @@ def load_data(direc,ratio,dataset,postfix=""):
     #if idx1 == 999:
     #  break
   
-  datafile = open(datadir+'_TEST_'+postfix, 'r')
+  datafile = open(datadir+'_TESTING_'+postfix, 'r')
   datareader = csv.reader(datafile)
   data = []
   for idx2, row in enumerate(datareader):

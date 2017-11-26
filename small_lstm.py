@@ -16,7 +16,7 @@ import math
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.layers import Embedding
-from keras.layers import LSTM
+from keras.layers import LSTM, TimeDistributed
 from keras.utils.np_utils import to_categorical
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 from sklearn.model_selection import train_test_split
@@ -29,6 +29,9 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint
+from keras import optimizers
+from keras import regularizers
+
 
 epinthesis_flag = False
 load_flag = False
@@ -36,7 +39,7 @@ load_image_flag = False
 
 model_file_name = "model_1_si"
 features_num=174 #384,174,222
-dataset = "1_classes_without_face"
+dataset = "1_classes_without_face_shuffled"
 epoches = 500
 
 labels_dict = {0: 2020, 1: 606, 2: 808, 3: 1818, 4: 909, 5: 808, 6: 606, 7: 1212, 8: 707, 9: 3434}
@@ -70,6 +73,13 @@ ratio = np.array([0.8,0.9]) #Ratios where to split the training and validation s
 #X_train,X_val,X_test,y_train,y_val,y_test = load_data(direc,ratio,dataset='DutchSL',postfix=dataset)
 X_train,X_val,X_test,y_train,y_val,y_test = load_data_si(direc,dataset="DutchSL",postfix=dataset)
 
+
+#X_train = X_train[0:len(X_train)/10]
+#X_val = X_val[0:len(X_val)/10]
+#X_test = X_test[0:len(X_test)/10]
+#y_train = y_train[0:len(y_train)/10]
+#y_val = y_val[0:len(y_val)/10]
+#y_test = y_test[0:len(y_test)/10]
 
 #print len(X_train)
 #N = len(X_train)
@@ -340,16 +350,24 @@ if(load_flag):
   sys.exit(0)
 
 model = Sequential()
-model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5, return_sequences=True,
-               input_shape=(features_num, 55)))  # returns a sequence of vectors of dimension 32   input shape = 384|174
-model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5, return_sequences=True))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32, dropout=0.5, recurrent_dropout=0.5))  # return a single vector of dimension 32
-model.add(Dense(10, activation='softmax'))
-model.compile(loss="mean_squared_error", optimizer="adam", metrics=['accuracy'])
-#model.compile(loss='categorical_crossentropy',
-#              optimizer='rmsprop',
-#              metrics=['accuracy'])
 
+#model.add(LSTM(32, dropout=0.2, recurrent_dropout=0.2, activity_regularizer=regularizers.l1_l2(0.01), kernel_regularizer=regularizers.l1_l2(0.01), recurrent_regularizer=regularizers.l1_l2(0.01), return_sequences=True, input_shape=(features_num, 55)))  # returns a sequence of vectors of dimension 32   input shape = 384|174
+#model.add(Dropout(0.2))
+#model.add(LSTM(32, dropout=0.2, recurrent_dropout=0.2, activity_regularizer=regularizers.l1_l2(0.01), kernel_regularizer=regularizers.l1_l2(0.01), recurrent_regularizer=regularizers.l1_l2(0.01), return_sequences=True))  # returns a sequence of vectors of dimension 32
+#model.add(Dropout(0.2))
+#model.add(LSTM(32, dropout=0.2, recurrent_dropout=0.2, activity_regularizer=regularizers.l1_l2(0.01), kernel_regularizer=regularizers.l1_l2(0.01), recurrent_regularizer=regularizers.l1_l2(0.01)))  # return a single vector of dimension 32
+#model.add(Dropout(0.2))
+#model.add(Dense(10, activation='softmax'))
+
+model.add(LSTM(32, return_sequences=True, input_shape=(features_num, 55)))  # returns a sequence of vectors of dimension 32   input shape = 384|174
+model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
+model.add(LSTM(32))  # return a single vector of dimension 32
+model.add(Dense(10, activation='softmax'))
+
+opt=optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+model.compile(loss='categorical_crossentropy',#'categorical_crossentropy',
+              optimizer=opt,
+              metrics=['accuracy'])
 
 
 #checkpoint
