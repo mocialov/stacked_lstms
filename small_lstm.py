@@ -37,9 +37,10 @@ epinthesis_flag = False
 load_flag = False
 load_image_flag = False
 
-model_file_name = "model_1_si"
+classes_num = 4
+model_file_name = "model_"+str(classes_num)+"_si_rmsprop"
 features_num=174 #384,174,222
-dataset = "1_classes_without_face_shuffled"
+dataset = str(classes_num)+"_classes_without_face"
 epoches = 500
 
 labels_dict = {0: 2020, 1: 606, 2: 808, 3: 1818, 4: 909, 5: 808, 6: 606, 7: 1212, 8: 707, 9: 3434}
@@ -179,19 +180,19 @@ X_train = X_train[0]
 X_train = np.array(X_train)
 X_train = np.vstack([np.expand_dims(x, 0) for x in X_train])
 y_train_copy = y_train
-y_train = np.eye(10)[y_train]
+y_train = np.eye(classes_num)[y_train]
 
 X_test = X_test[0]
 X_test = np.array(X_test)
 X_test = np.vstack([np.expand_dims(x, 0) for x in X_test])
 y_test_copy = y_test
-y_test = np.eye(10)[y_test]
+y_test = np.eye(classes_num)[y_test]
 
 X_val = X_val[0]
 X_val = np.array(X_val)
 X_val = np.vstack([np.expand_dims(x, 0) for x in X_val])
 y_val_copy = y_val
-y_val = np.eye(10)[y_val]
+y_val = np.eye(classes_num)[y_val]
 
 #print X_train.shape
 #print X_test.shape
@@ -359,14 +360,13 @@ model = Sequential()
 #model.add(Dropout(0.2))
 #model.add(Dense(10, activation='softmax'))
 
+
 model.add(LSTM(32, return_sequences=True, input_shape=(features_num, 55)))  # returns a sequence of vectors of dimension 32   input shape = 384|174
 model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
 model.add(LSTM(32))  # return a single vector of dimension 32
-model.add(Dense(10, activation='softmax'))
-
-opt=optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
-model.compile(loss='categorical_crossentropy',#'categorical_crossentropy',
-              optimizer=opt,
+model.add(Dense(classes_num, activation='softmax'))
+model.compile(loss='mean_squared_error',#'categorical_crossentropy',
+              optimizer='rmsprop',
               metrics=['accuracy'])
 
 
